@@ -280,9 +280,9 @@ class DashdSSH(object):
         try:
             # find dashd process id if running
             try:
-                pids = self.remote_command('ps -C "zcoind" -o pid')
+                pids = self.remote_command('ps -C "zcored" -o pid')
             except UnknownError:
-                raise Exception('is zcoind running on the remote machine?')
+                raise Exception('is zcored running on the remote machine?')
             pid = None
             if isinstance(pids, list):
                 pids = [pid.strip() for pid in pids]
@@ -293,14 +293,14 @@ class DashdSSH(object):
             config = {}
             if pid:
                 dashd_running = True
-                # using dashd pid find its executable path and then .zcoin directory and finally zcoin.conf file
+                # using dashd pid find its executable path and then .zcr directory and finally zcore.conf file
                 executables = self.remote_command('ls -l /proc/' + str(pid) + '/exe')
                 if executables and len(executables) >= 1:
                     elems = executables[0].split('->')
                     if len(elems) == 2:
                         executable = elems[1].strip()
                         dashd_dir = os.path.dirname(executable)
-                        dash_conf_file = dashd_dir + '/.zcoin/zcoin.conf'
+                        dash_conf_file = dashd_dir + '/.zcr/zcore.conf'
                         conf_lines = []
                         try:
                             conf_lines = self.remote_command('cat ' + dash_conf_file)
@@ -312,13 +312,13 @@ class DashdSSH(object):
                                 elems = cwd_lines[0].split('->')
                                 if len(elems) >= 2:
                                     cwd = elems[1]
-                                    dash_conf_file = cwd + '/.zcoin/zcoin.conf'
+                                    dash_conf_file = cwd + '/.zcr/zcore.conf'
                                     try:
                                         conf_lines = self.remote_command('cat ' + dash_conf_file)
                                     except Exception as e:
                                         # second method did not suceed, so assume, that conf file is located
-                                        # i /home/<username>/.zcoin directory
-                                        dash_conf_file = '/' + self.username + '/.zcoin/zcoin.conf'
+                                        # i /home/<username>/.zcr directory
+                                        dash_conf_file = '/' + self.username + '/.zcr/zcore.conf'
                                         if self.username != 'root':
                                             dash_conf_file = '/home' + dash_conf_file
                                         conf_lines = self.remote_command('cat ' + dash_conf_file)
@@ -349,13 +349,13 @@ class DashdIndexException(JSONRPCException):
     def __init__(self, parent_exception):
         JSONRPCException.__init__(self, parent_exception.error)
         self.message = self.message + \
-                       '\n\nMake sure the zcoind daemon you are connecting to has the following options enabled in ' \
-                       'its zcoin.conf:\n\n' + \
+                       '\n\nMake sure the zcored daemon you are connecting to has the following options enabled in ' \
+                       'its zcore.conf:\n\n' + \
                        'addressindex=1\n' + \
                        'spentindex=1\n' + \
                        'timestampindex=1\n' + \
                        'txindex=1\n\n' + \
-                       'Changing these parameters requires to execute zcoind with "-reindex" option (linux: ./zcoind -reindex)'
+                       'Changing these parameters requires to execute zcored with "-reindex" option (linux: ./zcored -reindex)'
 
 
 def control_rpc_call(func):
@@ -665,7 +665,7 @@ class DashdInterface(WndUtils):
         """
         try:
             if not self.cur_conn_def:
-                raise Exception('There is no connections to Zcoin network enabled in the configuration.')
+                raise Exception('There is no connections to ZCore network enabled in the configuration.')
 
             while True:
                 try:
@@ -834,10 +834,10 @@ class DashdInterface(WndUtils):
             if verify_node:
                 node_under_testnet = info.get('testnet')
                 if self.config.is_testnet() and not node_under_testnet:
-                    raise Exception('This RPC node works under Zcoin MAINNET, but your current configuration is '
+                    raise Exception('This RPC node works under ZCore MAINNET, but your current configuration is '
                                     'for TESTNET.')
                 elif self.config.is_mainnet() and node_under_testnet:
-                    raise Exception('This RPC node works under Zcoin TESTNET, but your current configuration is '
+                    raise Exception('This RPC node works under ZCore TESTNET, but your current configuration is '
                                     'for MAINNET.')
             return info
         else:
@@ -871,7 +871,7 @@ class DashdInterface(WndUtils):
         if self.open():
             # if what == 'relay':
             if False:
-                # FIXME: relay does not report correct status without 3rd parameter due to bug in zcoind
+                # FIXME: relay does not report correct status without 3rd parameter due to bug in zcored
                 return self.proxy.znodebroadcast(what, hexto, "not-safe")
             else:
                 return self.proxy.znodebroadcast(what, hexto)
@@ -987,7 +987,7 @@ class DashdInterface(WndUtils):
                     logging.info('Using cached znodelist (data age: %s)' % str(int(time.time()) - last_read_time))
                     return self.masternodes
                 else:
-                    logging.info('Loading masternode list from Zcoin daemon...')
+                    logging.info('Loading masternode list from ZCore daemon...')
                     mns = self.proxy.znodelist(*args)
                     mns = parse_mns(mns)
                     logging.info('Finished loading masternode list')

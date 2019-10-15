@@ -540,7 +540,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                         self.show_connection_successful()
                         break
                     znsync = self.dashd_intf.znsync()
-                    self.setmessage('Zcoin daemon is synchronizing: assetid: %s, assetname: %s' %
+                    self.setmessage('ZCore daemon is synchronizing: assetid: %s, assetname: %s' %
                                         (str(znsync.get('AssetID', '')),
                                          str(znsync.get('AssetName', ''))
                                          ), style='{background-color:rgb(255,128,0);color:white;padding:3px 5px 3px 5px; border-radius:3px}')
@@ -628,7 +628,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
             if self.dashd_connection_ok:
                 if self.is_dashd_syncing:
-                    self.infoMsg('Connection successful, but Zcoin daemon is synchronizing.')
+                    self.infoMsg('Connection successful, but ZCore daemon is synchronizing.')
                 else:
                     self.infoMsg('Connection successful.')
             else:
@@ -649,7 +649,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         else:
             # configuration not complete: show config window
             self.errorMsg("There are no (enabled) connections to an RPC node in your configuration. "
-                    "Please go to Settings and setup RPC connection to your zcoind.")
+                    "Please go to Settings and setup RPC connection to your zcored.")
 
     def setStatus1Text(self, text, color):
         def set_status(text, color):
@@ -733,7 +733,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                                                         hw_type=self.config.hw_type)
 
                     has_connected = True
-                    self.config.hw_coin_name = 'Zcoin'
+                    self.config.hw_coin_name = 'ZCore'
                     if self.config.dash_network == 'TESTNET':
                         self.config.hw_coin_name += ' Testnet'
 
@@ -1319,7 +1319,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 paths, user_cancelled = self.scan_hw_for_bip32_paths([self.curMasternode.collateralAddress])
                 if not user_cancelled:
                     if not paths or len(paths) == 0:
-                        self.errorMsg("Couldn't find Zcoin address in your hardware wallet. If you are using HW passphrase, "
+                        self.errorMsg("Couldn't find ZCore address in your hardware wallet. If you are using HW passphrase, "
                                       "make sure, that you entered the correct one.")
                     else:
                         self.edtMnCollateralBip32Path.setText(paths.get(self.curMasternode.collateralAddress, ''))
@@ -1372,10 +1372,10 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
         self.checkDashdConnection(wait_for_check_finish=True)
         if not self.dashd_connection_ok:
-            self.errorMsg("Connection to Zcoin daemon is not established.")
+            self.errorMsg("Connection to ZCore daemon is not established.")
             return
         if self.is_dashd_syncing:
-            self.warnMsg("Zcoin daemon to which you are connected is synchronizing. You have to wait "
+            self.warnMsg("ZCore daemon to which you are connected is synchronizing. You have to wait "
                          "until it's finished.")
             return
 
@@ -1422,7 +1422,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 self.update_edit_controls_state()
             elif hw_collateral_address != cfg_collateral_address:
                 # verify config's collateral addres with hardware wallet
-                if self.queryDlg(message="The Zcoin address retrieved from the hardware wallet (%s) for the configured "
+                if self.queryDlg(message="The ZCore address retrieved from the hardware wallet (%s) for the configured "
                                          "BIP32 path does not match the collateral address entered in the "
                                          "configuration: %s.\n\n"
                                          "Do you really want to continue?" %
@@ -1558,7 +1558,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
                     if failed_count:
                         if not retried:
-                            # Due to zcoind bug first `znodebroadcast relay` can report failure while it actually
+                            # Due to zcored bug first `znodebroadcast relay` can report failure while it actually
                             # succeeded. Re-broadcast it again to check actual result.
                             retried = True
                             continue
@@ -1571,7 +1571,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                     if failed_count == 0:
                         self.infoMsg(overall)
                     else:
-                        self.errorMsg('Failed to start znode.\n\nResponse from Zcoin daemon: %s.' % errorMessage)
+                        self.errorMsg('Failed to start znode.\n\nResponse from ZCore daemon: %s.' % errorMessage)
                     break
             else:
                 logging.error('Start MN error: ' + str(ret))
@@ -1700,7 +1700,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 self.lblMnStatus.setText('')
                 raise
         else:
-            self.errorMsg('Zcoin daemon not connected')
+            self.errorMsg('ZCore daemon not connected')
 
     @pyqtSlot(bool)
     def on_action_transfer_funds_for_cur_mn_triggered(self):
@@ -1713,7 +1713,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 self.errorMsg("Enter the Znode collateral BIP32 path. You can use the 'right arrow' button "
                               "on the right of the 'Collateral' edit box.")
             elif not self.curMasternode.collateralAddress:
-                self.errorMsg("Enter the Znode collateral Zcoin address. You can use the 'left arrow' "
+                self.errorMsg("Enter the Znode collateral ZCore address. You can use the 'left arrow' "
                               "button on the left of the 'BIP32 path' edit box.")
             else:
                 src_addresses.append((self.curMasternode.collateralAddress, self.curMasternode.collateralBip32Path))
@@ -1745,7 +1745,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
           if the value is None, show the default utxo source type
         """
         if not self.dashd_intf.open():
-            self.errorMsg('Zcoin daemon not connected')
+            self.errorMsg('ZCore daemon not connected')
         else:
             ui = send_payout_dlg.WalletDlg(self, initial_mn_sel=initial_mn)
             ui.exec_()
